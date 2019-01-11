@@ -129,7 +129,7 @@ final class ShortestPathFinder {
   }
 
   private void enqueueGcRoots(Snapshot snapshot) {
-    for (RootObj rootObj : HahaSpy.allGcRoots(snapshot)) {
+    for (RootObj rootObj : snapshot.getGCRoots()) {
       switch (rootObj.getRootType()) {
         case JAVA_LOCAL:
           Instance thread = HahaSpy.allocatingThread(rootObj);
@@ -164,6 +164,10 @@ final class ShortestPathFinder {
         case NATIVE_STACK:
         case JAVA_STATIC:
           enqueue(null, null, rootObj, null);
+          break;
+        case THREAD_OBJECT:
+          // TODO Figure out what to do with those
+          // https://android.googlesource.com/platform/tools/base/+/c0f0d528c155cab32e372dac77370569a386245c
           break;
         default:
           throw new UnsupportedOperationException("Unknown root type:" + rootObj.getRootType());

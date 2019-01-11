@@ -16,18 +16,17 @@
 package com.squareup.leakcanary;
 
 import android.support.annotation.NonNull;
+import com.android.tools.perflib.captures.DataBuffer;
+import com.android.tools.perflib.captures.MemoryMappedFileBuffer;
 import com.squareup.haha.perflib.ArrayInstance;
 import com.squareup.haha.perflib.ClassInstance;
 import com.squareup.haha.perflib.ClassObj;
 import com.squareup.haha.perflib.Field;
-import com.squareup.haha.perflib.HprofParser;
 import com.squareup.haha.perflib.Instance;
 import com.squareup.haha.perflib.RootObj;
 import com.squareup.haha.perflib.RootType;
 import com.squareup.haha.perflib.Snapshot;
 import com.squareup.haha.perflib.Type;
-import com.squareup.haha.perflib.io.HprofBuffer;
-import com.squareup.haha.perflib.io.MemoryMappedFileBuffer;
 import gnu.trove.THashMap;
 import gnu.trove.TObjectProcedure;
 import java.io.File;
@@ -114,9 +113,9 @@ public final class HeapAnalyzer {
       throw new IllegalArgumentException("File does not exist: " + heapDumpFile);
     }
     try {
-      HprofBuffer buffer = new MemoryMappedFileBuffer(heapDumpFile);
-      HprofParser parser = new HprofParser(buffer);
-      Snapshot snapshot = parser.parse();
+
+      DataBuffer buffer = new MemoryMappedFileBuffer(heapDumpFile);
+      Snapshot snapshot = Snapshot.createSnapshot(buffer);
       deduplicateGcRoots(snapshot);
 
       ClassObj refClass = snapshot.findClass(KeyedWeakReference.class.getName());
@@ -166,10 +165,9 @@ public final class HeapAnalyzer {
 
     try {
       listener.onProgressUpdate(READING_HEAP_DUMP_FILE);
-      HprofBuffer buffer = new MemoryMappedFileBuffer(heapDumpFile);
-      HprofParser parser = new HprofParser(buffer);
+      DataBuffer buffer = new MemoryMappedFileBuffer(heapDumpFile);
       listener.onProgressUpdate(PARSING_HEAP_DUMP);
-      Snapshot snapshot = parser.parse();
+      Snapshot snapshot = Snapshot.createSnapshot(buffer);
       listener.onProgressUpdate(DEDUPLICATING_GC_ROOTS);
       deduplicateGcRoots(snapshot);
       listener.onProgressUpdate(FINDING_LEAKING_REF);

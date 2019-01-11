@@ -21,7 +21,9 @@ public class RetainedSizeTest {
   @Parameterized.Parameters public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
         { ASYNC_TASK_PRE_M, 207_407 }, //
+        // TODO why did this change to 145353 with latest perflib?
         { ASYNC_TASK_M, 1_870 }, //
+        // TODO why did this change to 0 with latest perflib?
         { ASYNC_TASK_O, 753 }, //
     });
   }

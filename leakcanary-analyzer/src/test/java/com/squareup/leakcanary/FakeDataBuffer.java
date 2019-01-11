@@ -1,11 +1,10 @@
 package com.squareup.leakcanary;
 
-import com.squareup.haha.perflib.io.HprofBuffer;
-
+import com.android.tools.perflib.captures.DataBuffer;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
-public final class FakeHprofBuffer implements HprofBuffer {
+public final class FakeDataBuffer implements DataBuffer {
   private static final String PRE_O_CHARSET = "UTF-16BE";
 
   private final String stringCharset;
@@ -18,11 +17,11 @@ public final class FakeHprofBuffer implements HprofBuffer {
   private String[] stringsToRead;
   private int stringIndex = -1;
 
-  FakeHprofBuffer() {
+  FakeDataBuffer() {
     this(PRE_O_CHARSET);
   }
 
-  FakeHprofBuffer(String stringCharset) {
+  FakeDataBuffer(String stringCharset) {
     this.stringCharset = stringCharset;
   }
 
@@ -39,6 +38,9 @@ public final class FakeHprofBuffer implements HprofBuffer {
   @Override
   public byte readByte() {
     throw new UnsupportedOperationException("no bytes to read");
+  }
+
+  @Override public void dispose() {
   }
 
   @Override

@@ -49,6 +49,9 @@ public class AsyncTaskLeakTest {
     return asList(new Object[][] {
         { ASYNC_TASK_PRE_M }, //
         { ASYNC_TASK_M }, //
+        // TODO With the latest perflib, all the tests for this O Heap Dump are failing because
+        // we're unable to find a "mBuffer" field in Bitmap when computing the retained size.
+        // Perflib added new code related to bitmaps so there's probably something there.
         { ASYNC_TASK_O } //
     });
   }
