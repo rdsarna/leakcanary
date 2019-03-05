@@ -23,6 +23,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
@@ -209,4 +210,18 @@ public final class LeakCanaryInternals {
   private LeakCanaryInternals() {
     throw new AssertionError();
   }
+
+  public static void setNotificationImportance(Context context, int importance) {
+    SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREF_CONFIG_FILE, Context.MODE_PRIVATE);
+    sharedPref.edit().putInt(SHARED_PREF_NOTIFICATION_IMPORTANCE, importance).apply();
+  }
+
+  public static void showExcludedLeaks(Context context, boolean show) {
+    SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREF_CONFIG_FILE, Context.MODE_PRIVATE);
+    sharedPref.edit().putBoolean(SHARED_PREF_EXCLUDED_LEAKS, show).apply();
+  }
+
+  public static final String SHARED_PREF_CONFIG_FILE = "custom_config";
+  public static final String SHARED_PREF_NOTIFICATION_IMPORTANCE = "notification_importance";
+  public static final String SHARED_PREF_EXCLUDED_LEAKS = "show_excluded_leaks";
 }

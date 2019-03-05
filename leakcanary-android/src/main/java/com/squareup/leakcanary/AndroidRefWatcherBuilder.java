@@ -77,6 +77,23 @@ public final class AndroidRefWatcherBuilder extends RefWatcherBuilder<AndroidRef
   }
 
   /**
+   * Set the default importance of all Notifications
+   * @param importance a constant from the NotificationManager class
+   */
+  public @NonNull AndroidRefWatcherBuilder notificationImportance(int importance) {
+    LeakCanaryInternals.setNotificationImportance(context, importance);
+    return self();
+  }
+
+  /**
+   * Should the [Excluded] leak notifications be shown.
+   */
+  public @NonNull AndroidRefWatcherBuilder showExcludedLeaks(boolean show) {
+    LeakCanaryInternals.showExcludedLeaks(context, show);
+    return self();
+  }
+
+  /**
    * Creates a {@link RefWatcher} instance and makes it available through {@link
    * LeakCanary#installedRefWatcher()}.
    *

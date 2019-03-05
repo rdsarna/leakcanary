@@ -16,6 +16,7 @@
 package com.squareup.leakcanary;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import com.squareup.leakcanary.internal.DisplayLeakActivity;
@@ -27,6 +28,8 @@ import java.util.Locale;
 
 import static android.text.format.Formatter.formatShortFileSize;
 import static com.squareup.leakcanary.LeakCanary.leakInfo;
+import static com.squareup.leakcanary.internal.LeakCanaryInternals.SHARED_PREF_CONFIG_FILE;
+import static com.squareup.leakcanary.internal.LeakCanaryInternals.SHARED_PREF_EXCLUDED_LEAKS;
 import static com.squareup.leakcanary.internal.LeakCanaryInternals.classSimpleName;
 
 /**
@@ -51,35 +54,39 @@ public class DisplayLeakService extends AbstractAnalysisResultService {
 
     String contentTitle;
     if (resultSaved) {
-      PendingIntent pendingIntent =
-          DisplayLeakActivity.createPendingIntent(this, heapDump.referenceKey);
-      if (result.failure != null) {
-        contentTitle = getString(R.string.leak_canary_analysis_failed);
-      } else {
-        String className = classSimpleName(result.className);
-        if (result.leakFound) {
-          if (result.retainedHeapSize == AnalysisResult.RETAINED_HEAP_SKIPPED) {
-            if (result.excludedLeak) {
-              contentTitle = getString(R.string.leak_canary_leak_excluded, className);
+      boolean showExcludedLeaks = getSharedPreferences(SHARED_PREF_CONFIG_FILE, Context.MODE_PRIVATE)
+              .getBoolean(SHARED_PREF_EXCLUDED_LEAKS, true);
+      if (!result.excludedLeak || showExcludedLeaks) {
+        PendingIntent pendingIntent =
+                DisplayLeakActivity.createPendingIntent(this, heapDump.referenceKey);
+        if (result.failure != null) {
+          contentTitle = getString(R.string.leak_canary_analysis_failed);
+        } else {
+          String className = classSimpleName(result.className);
+          if (result.leakFound) {
+            if (result.retainedHeapSize == AnalysisResult.RETAINED_HEAP_SKIPPED) {
+              if (result.excludedLeak) {
+                contentTitle = getString(R.string.leak_canary_leak_excluded, className);
+              } else {
+                contentTitle = getString(R.string.leak_canary_class_has_leaked, className);
+              }
             } else {
-              contentTitle = getString(R.string.leak_canary_class_has_leaked, className);
+              String size = formatShortFileSize(this, result.retainedHeapSize);
+              if (result.excludedLeak) {
+                contentTitle =
+                        getString(R.string.leak_canary_leak_excluded_retaining, className, size);
+              } else {
+                contentTitle =
+                        getString(R.string.leak_canary_class_has_leaked_retaining, className, size);
+              }
             }
           } else {
-            String size = formatShortFileSize(this, result.retainedHeapSize);
-            if (result.excludedLeak) {
-              contentTitle =
-                  getString(R.string.leak_canary_leak_excluded_retaining, className, size);
-            } else {
-              contentTitle =
-                  getString(R.string.leak_canary_class_has_leaked_retaining, className, size);
-            }
+            contentTitle = getString(R.string.leak_canary_class_no_leak, className);
           }
-        } else {
-          contentTitle = getString(R.string.leak_canary_class_no_leak, className);
         }
+        String contentText = getString(R.string.leak_canary_notification_message);
+        showNotification(pendingIntent, contentTitle, contentText);
       }
-      String contentText = getString(R.string.leak_canary_notification_message);
-      showNotification(pendingIntent, contentTitle, contentText);
     } else {
       onAnalysisResultFailure(getString(R.string.leak_canary_could_not_save_text));
     }
